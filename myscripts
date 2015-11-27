@@ -1,0 +1,41 @@
+Finding amount of records in all tables within database:
+
+DECLARE @QueryString NVARCHAR(MAX) ;
+SELECT @QueryString = COALESCE(@QueryString + ' UNION ALL ','')
+                      + 'SELECT '
+                      + '''' + QUOTENAME(SCHEMA_NAME(sOBJ.schema_id))
+                      + '.' + QUOTENAME(sOBJ.name) + '''' + ' AS [TableName]
+                      , COUNT(*) AS [RowCount] FROM '
+                      + QUOTENAME(SCHEMA_NAME(sOBJ.schema_id))
+                      + '.' + QUOTENAME(sOBJ.name) + ' WITH (NOLOCK) '
+FROM sys.objects AS sOBJ
+WHERE
+      sOBJ.type = 'U'
+      AND sOBJ.is_ms_shipped = 0x0
+ORDER BY SCHEMA_NAME(sOBJ.schema_id), sOBJ.name ;
+EXEC sp_executesql @QueryString
+GO
+
+----------------------------------------------------------------------------------
+Finding amount of columns in each table within database:
+
+ SELECT COUNT(*) as QTY, table_name
+  FROM INFORMATION_SCHEMA.COLUMNS
+  Group By table_name
+  Order by QTY desc;
+-----------------------------------------------------------------------------------
+
+Finding the amount of tables in a large database:
+
+USE [DATABASE NAME]
+SELECT COUNT(*) from information_schema.tables 
+WHERE table_type = 'base table' 
+-----------------------------------------------------------------------------------
+
+Finding duplicates in Contacts table:
+
+SELECT First_Name, Last_Name, count(*) as qty 
+FROM GIFTS.dbo.Contacts 
+GROUP BY First_Name, Last_Name HAVING count(*)> 1;
+
+---------------------------
